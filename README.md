@@ -1,0 +1,2 @@
+# BlNB_Studio_style
+用于给用户快速初始化blender工程目录 符合官方项目管理标准
