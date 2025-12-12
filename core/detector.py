@@ -8,18 +8,6 @@ except ImportError:
     bpy = None
 
 def find_project_root(current_file_path: Optional[str] = None) -> Optional[Path]:
-    if bpy:
-        scene = bpy.context.scene if hasattr(bpy.context, 'scene') else None
-        if scene and hasattr(scene, 'studio_project_props'):
-            props = scene.studio_project_props
-            if props.project_root_path:
-                root_path = Path(props.project_root_path)
-                if root_path.exists():
-                    assets_dir = root_path / "01_assets"
-                    shots_dir = root_path / "02_shots"
-                    if assets_dir.exists() or shots_dir.exists():
-                        return root_path
-    
     if current_file_path is None:
         if not bpy or not bpy.data.filepath:
             return None
@@ -44,6 +32,21 @@ def find_project_root(current_file_path: Optional[str] = None) -> Optional[Path]
         check_path = check_path.parent
         depth += 1
     
+    if bpy:
+        try:
+            scene = bpy.context.scene if hasattr(bpy.context, 'scene') else None
+            if scene and hasattr(scene, 'studio_project_props'):
+                props = scene.studio_project_props
+                if props.project_root_path:
+                    root_path = Path(props.project_root_path)
+                    if root_path.exists():
+                        assets_dir = root_path / "01_assets"
+                        shots_dir = root_path / "02_shots"
+                        if assets_dir.exists() or shots_dir.exists():
+                            return root_path
+        except:
+            pass
+    
     return None
 
 def detect_project_type(project_root: Path) -> str:
@@ -63,4 +66,60 @@ def detect_project_type(project_root: Path) -> str:
         return "single_shot"
     else:
         return "unknown"
+
+def detect_current_asset_type() -> Optional[str]:
+    if not bpy or not bpy.data.filepath:
+        return None
+    
+    file_path = Path(bpy.data.filepath).resolve()
+    project_root = find_project_root()
+    
+    if not project_root:
+        return None
+    
+    assets_dir = project_root / "01_assets"
+    if not assets_dir.exists():
+        return None
+    
+    asset_types = ['char', 'prop', 'env', 'fx', 'veh', 'veg', 'light']
+    
+    for asset_type in asset_types:
+        asset_type_dir = assets_dir / asset_type
+        if asset_type_dir.exists():
+            try:
+                file_path.resolve().relative_to(asset_type_dir.resolve())
+                return asset_type
+            except ValueError:
+                continue
+    
+    return None
+
+def get_current_asset_id() -> Optional[str]:
+    if not bpy or not bpy.data.filepath:
+        return None
+    
+    file_path = Path(bpy.data.filepath).resolve()
+    project_root = find_project_root()
+    
+    if not project_root:
+        return None
+    
+    assets_dir = project_root / "01_assets"
+    if not assets_dir.exists():
+        return None
+    
+    asset_types = ['char', 'prop', 'env', 'fx', 'veh', 'veg', 'light']
+    
+    for asset_type in asset_types:
+        asset_type_dir = assets_dir / asset_type
+        if asset_type_dir.exists():
+            try:
+                rel_path = file_path.resolve().relative_to(asset_type_dir.resolve())
+                parts = rel_path.parts
+                if len(parts) > 0:
+                    return parts[0]
+            except ValueError:
+                continue
+    
+    return None
 

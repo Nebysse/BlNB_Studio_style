@@ -2,7 +2,8 @@ import bpy
 import os
 from bpy.props import StringProperty, EnumProperty
 from bpy.types import Operator
-from ..core import generator
+from pathlib import Path
+from ..core import generator, metadata, blend_meta
 
 class STUDIO_OT_InitProject(Operator):
     bl_idname = "studio.init_project"
@@ -53,6 +54,30 @@ class STUDIO_OT_InitProject(Operator):
         )
         
         if success:
+            project_root = Path(result)
+            identity_props = context.scene.studio_project_identity_props
+            
+            metadata.write_project_metadata(
+                project_root=project_root,
+                author_name=identity_props.author_name or "",
+                studio=identity_props.studio or "",
+                role=identity_props.role or "",
+                contact=identity_props.contact or "",
+                project_code=self.project_code,
+                project_type=self.project_type,
+                copyright=identity_props.copyright or ""
+            )
+            
+            blend_meta.write_blend_metadata(
+                author_name=identity_props.author_name or "",
+                studio=identity_props.studio or "",
+                role=identity_props.role or "",
+                contact=identity_props.contact or "",
+                project_code=self.project_code,
+                project_type=self.project_type,
+                copyright=identity_props.copyright or ""
+            )
+            
             self.report({'INFO'}, f"项目创建成功: {result}")
             context.scene.studio_project_props.project_code = self.project_code
             context.scene.studio_project_props.base_path = base_path

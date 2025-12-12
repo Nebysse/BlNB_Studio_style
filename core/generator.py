@@ -1,8 +1,8 @@
 import os
 import json
 from pathlib import Path
-from typing import Dict, Any, Tuple
-from . import schema
+from typing import Dict, Any, Tuple, Optional
+from . import schema, metadata
 
 def create_directory_structure(base_path: Path, dirs: Dict[str, Any], parent_path: Path = None):
     if parent_path is None:
@@ -130,6 +130,8 @@ def create_project(
         
         project_root.mkdir(parents=True, exist_ok=True)
         
+        metadata.create_project_marker(project_root)
+        
         create_directory_structure(project_root, schema_data["directories"])
         
         for file_pattern in schema_data["files"]:
@@ -152,38 +154,35 @@ def create_asset_structure(
     project_root: Path,
     asset_type: str,
     asset_id: str
-) -> Tuple[bool, str]:
+) -> Tuple[bool, str, Optional[Path]]:
     try:
         asset_id = asset_id.lower().replace(" ", "_").replace("-", "_")
         
         if asset_type not in schema.ASSET_TEMPLATES:
-            return False, f"未知的资产类型: {asset_type}"
+            return False, f"未知的资产类型: {asset_type}", None
         
         asset_dir = project_root / "01_assets" / asset_type / asset_id
         if asset_dir.exists():
-            return False, f"资产目录已存在: {asset_dir}"
+            return False, f"资产目录已存在: {asset_dir}", None
         
         template = schema.ASSET_TEMPLATES[asset_type]
         create_directory_structure(asset_dir, template["directories"], asset_dir)
         
-        for file_pattern in template["files"]:
-            file_path = asset_dir / file_pattern.format(asset_id=asset_id)
-            if file_path.suffix == ".blend":
-                create_blend_file(file_path)
-            else:
-                file_path.parent.mkdir(parents=True, exist_ok=True)
-                file_path.touch()
+        work_dir = asset_dir / "work"
+        work_dir.mkdir(parents=True, exist_ok=True)
         
-        return True, str(asset_dir)
+        default_file = work_dir / f"{asset_id}_layout_v001.blend"
+        
+        return True, str(asset_dir), default_file
     
     except Exception as e:
-        return False, f"创建资产结构失败: {str(e)}"
+        return False, f"创建资产结构失败: {str(e)}", None
 
 def create_shot_structure(
     project_root: Path,
     seq_id: str,
     shot_id: str
-) -> Tuple[bool, str]:
+) -> Tuple[bool, str, Optional[Path]]:
     try:
         seq_id = seq_id.lower().replace(" ", "_").replace("-", "_")
         shot_id = shot_id.lower().replace(" ", "_").replace("-", "_")
@@ -195,21 +194,18 @@ def create_shot_structure(
         
         shot_dir = project_root / "02_shots" / seq_id / shot_id
         if shot_dir.exists():
-            return False, f"镜头目录已存在: {shot_dir}"
+            return False, f"镜头目录已存在: {shot_dir}", None
         
         template = schema.SHOT_TEMPLATES
         create_directory_structure(shot_dir, template["directories"], shot_dir)
         
-        for file_pattern in template["files"]:
-            file_path = shot_dir / file_pattern.format(shot_id=shot_id)
-            if file_path.suffix == ".blend":
-                create_blend_file(file_path)
-            else:
-                file_path.parent.mkdir(parents=True, exist_ok=True)
-                file_path.touch()
+        work_dir = shot_dir / "work"
+        work_dir.mkdir(parents=True, exist_ok=True)
         
-        return True, str(shot_dir)
+        default_file = work_dir / f"shot_{shot_id}_layout_v001.blend"
+        
+        return True, str(shot_dir), default_file
     
     except Exception as e:
-        return False, f"创建镜头结构失败: {str(e)}"
+        return False, f"创建镜头结构失败: {str(e)}", None
 

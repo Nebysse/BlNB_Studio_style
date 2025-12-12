@@ -9,9 +9,12 @@ PROJECT_SCHEMAS = {
             },
             "01_assets": {
                 "char": {},
-                "env": {},
                 "prop": {},
+                "env": {},
                 "fx": {},
+                "veh": {},
+                "veg": {},
+                "light": {},
             },
             "02_shots": {
                 "sh_0001": {
@@ -54,9 +57,12 @@ PROJECT_SCHEMAS = {
             },
             "01_assets": {
                 "char": {},
-                "env": {},
                 "prop": {},
+                "env": {},
                 "fx": {},
+                "veh": {},
+                "veg": {},
+                "light": {},
             },
             "02_shots": {
                 "seq_010": {
@@ -101,9 +107,12 @@ PROJECT_SCHEMAS = {
             },
             "01_assets": {
                 "char": {},
-                "env": {},
                 "prop": {},
+                "env": {},
                 "fx": {},
+                "veh": {},
+                "veg": {},
+                "light": {},
             },
             "05_lib": {
                 "textures": {},
@@ -133,16 +142,6 @@ ASSET_TEMPLATES = {
             "work/{asset_id}_layout_v001.blend",
         ],
     },
-    "env": {
-        "directories": {
-            "work": {},
-            "publish": {},
-            "render": {},
-        },
-        "files": [
-            "work/{asset_id}_layout_v001.blend",
-        ],
-    },
     "prop": {
         "directories": {
             "work": {},
@@ -153,11 +152,51 @@ ASSET_TEMPLATES = {
             "work/{asset_id}_model_v001.blend",
         ],
     },
+    "env": {
+        "directories": {
+            "work": {},
+            "publish": {},
+            "render": {},
+        },
+        "files": [
+            "work/{asset_id}_layout_v001.blend",
+        ],
+    },
     "fx": {
         "directories": {
             "work": {},
             "publish": {},
             "cache": {},
+        },
+        "files": [
+            "work/{asset_id}_setup_v001.blend",
+        ],
+    },
+    "veh": {
+        "directories": {
+            "work": {},
+            "publish": {},
+            "render": {},
+        },
+        "files": [
+            "work/{asset_id}_model_v001.blend",
+        ],
+    },
+    "veg": {
+        "directories": {
+            "work": {},
+            "publish": {},
+            "render": {},
+        },
+        "files": [
+            "work/{asset_id}_model_v001.blend",
+        ],
+    },
+    "light": {
+        "directories": {
+            "work": {},
+            "publish": {},
+            "render": {},
         },
         "files": [
             "work/{asset_id}_setup_v001.blend",
