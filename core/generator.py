@@ -2,7 +2,7 @@ import os
 import json
 from pathlib import Path
 from typing import Dict, Any, Tuple, Optional
-from . import schema, metadata
+from . import schema, metadata, naming
 
 def create_directory_structure(base_path: Path, dirs: Dict[str, Any], parent_path: Path = None):
     if parent_path is None:
@@ -171,7 +171,8 @@ def create_asset_structure(
         work_dir = asset_dir / "work"
         work_dir.mkdir(parents=True, exist_ok=True)
         
-        default_file = work_dir / f"{asset_id}_layout_v001.blend"
+        default_filename = naming.generate_asset_filename(asset_id, task=None, version=1)
+        default_file = work_dir / default_filename
         
         return True, str(asset_dir), default_file
     
@@ -202,7 +203,8 @@ def create_shot_structure(
         work_dir = shot_dir / "work"
         work_dir.mkdir(parents=True, exist_ok=True)
         
-        default_file = work_dir / f"shot_{shot_id}_layout_v001.blend"
+        default_filename = naming.generate_shot_filename(shot_id, task="layout", version=1)
+        default_file = work_dir / default_filename
         
         return True, str(shot_dir), default_file
     

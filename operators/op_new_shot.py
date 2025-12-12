@@ -2,7 +2,7 @@ import bpy
 from bpy.props import StringProperty
 from bpy.types import Operator
 from pathlib import Path
-from ..core import generator, detector
+from ..core import generator, detector, naming
 
 class STUDIO_OT_NewShot(Operator):
     bl_idname = "studio.new_shot"
@@ -43,9 +43,14 @@ class STUDIO_OT_NewShot(Operator):
             self.report({'ERROR'}, result)
             return {'CANCELLED'}
         
-        if target_file and target_file.exists():
-            self.report({'ERROR'}, f"目标文件已存在: {target_file}")
-            return {'CANCELLED'}
+        if target_file:
+            is_valid, error_msg = naming.validate_shot_filename(target_file.name)
+            if not is_valid:
+                self.report({'INFO'}, f"命名提醒: {error_msg}")
+            
+            if target_file.exists():
+                self.report({'ERROR'}, f"目标文件已存在: {target_file}")
+                return {'CANCELLED'}
         
         try:
             bpy.ops.wm.save_as_mainfile(filepath=str(target_file))

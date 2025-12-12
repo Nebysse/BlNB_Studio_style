@@ -139,7 +139,7 @@ ASSET_TEMPLATES = {
             "render": {},
         },
         "files": [
-            "work/{asset_id}_layout_v001.blend",
+            "work/{asset_id}_v001.blend",
         ],
     },
     "prop": {
@@ -159,7 +159,7 @@ ASSET_TEMPLATES = {
             "render": {},
         },
         "files": [
-            "work/{asset_id}_layout_v001.blend",
+            "work/{asset_id}_v001.blend",
         ],
     },
     "fx": {

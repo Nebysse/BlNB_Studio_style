@@ -1,4 +1,4 @@
-from . import metadata, blend_meta
+from . import metadata, blend_meta, naming
 
-__all__ = ['metadata', 'blend_meta']
+__all__ = ['metadata', 'blend_meta', 'naming']
 

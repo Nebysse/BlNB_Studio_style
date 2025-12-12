@@ -31,14 +31,28 @@ classes = [
 ]
 
 def on_save_pre(scene):
-    from .core import metadata, blend_meta, detector
+    from .core import metadata, blend_meta, detector, naming
+    from pathlib import Path
     
     if not bpy.data.filepath:
+        return
+    
+    file_path = Path(bpy.data.filepath)
+    if not file_path.suffix == ".blend":
         return
     
     project_root = detector.find_project_root()
     if not project_root:
         return
+    
+    domain = naming.detect_domain_from_path(file_path)
+    if domain:
+        filename = file_path.name
+        is_valid, error_msg = naming.validate_filename_by_domain(filename, domain, file_path)
+        if not is_valid:
+            if not hasattr(bpy.types.Scene, 'studio_naming_hint'):
+                bpy.types.Scene.studio_naming_hint = bpy.props.StringProperty()
+            scene.studio_naming_hint = error_msg
     
     project_meta = metadata.read_project_metadata(project_root)
     if project_meta:

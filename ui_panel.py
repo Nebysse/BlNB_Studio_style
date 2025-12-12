@@ -3,7 +3,7 @@ import os
 from bpy.props import StringProperty, EnumProperty
 from bpy.types import Panel, PropertyGroup
 from pathlib import Path
-from .core import detector, metadata, blend_meta
+from .core import detector, metadata, blend_meta, naming
 
 class StudioProjectProperties(PropertyGroup):
     project_code: StringProperty(
@@ -102,6 +102,18 @@ class STUDIO_PT_ProjectPanel(Panel):
         project_root = detector.find_project_root()
         
         if project_root:
+            if bpy.data.filepath:
+                file_path = Path(bpy.data.filepath)
+                domain = naming.detect_domain_from_path(file_path)
+                if domain:
+                    filename = file_path.name
+                    is_valid, error_msg = naming.validate_filename_by_domain(filename, domain, file_path)
+                    if not is_valid:
+                        hint_box = layout.box()
+                        hint_box.label(text="💡 命名规范提醒", icon='INFO')
+                        hint_box.label(text=error_msg)
+                        layout.separator()
+            
             box = layout.box()
             box.label(text="当前项目")
             box.label(text=f"根目录: {project_root}")
