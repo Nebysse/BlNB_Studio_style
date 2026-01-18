@@ -6,8 +6,8 @@ class StudioProjectAddonPreferences(bpy.types.AddonPreferences):
     bl_idname = __package__
     
     default_project_root: StringProperty(
-        name="默认项目根目录",
-        description="新建项目时的默认根目录",
+        name="Default Project Root Directory",
+        description="Default root directory for new projects",
         default=os.path.expanduser("~/blender_projects"),
         subtype='DIR_PATH',
     )

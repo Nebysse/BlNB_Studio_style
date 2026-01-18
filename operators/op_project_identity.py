@@ -5,16 +5,17 @@ from ..core import metadata, blend_meta, detector
 
 class STUDIO_OT_WriteToProjectMetadata(Operator):
     bl_idname = "studio.write_to_project_metadata"
-    bl_label = "写入项目元数据"
-    bl_description = "将当前身份信息写入 project.json"
+    bl_label = "Write to Project Metadata"
+    bl_description = "Write current identity information to project.json"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_translation_context = "Operator"
     
     def execute(self, context):
         props = context.scene.studio_project_identity_props
         
         project_root = detector.find_project_root()
         if not project_root:
-            self.report({'ERROR'}, "未检测到项目根目录")
+            self.report({'ERROR'}, "Project root directory not detected")
             return {'CANCELLED'}
         
         if not metadata.is_project_root(project_root):
@@ -32,21 +33,22 @@ class STUDIO_OT_WriteToProjectMetadata(Operator):
         )
         
         if success:
-            self.report({'INFO'}, "项目元数据已更新")
+            self.report({'INFO'}, "Project metadata updated")
             return {'FINISHED'}
         else:
-            self.report({'ERROR'}, "写入项目元数据失败")
+            self.report({'ERROR'}, "Failed to write project metadata")
             return {'CANCELLED'}
 
 class STUDIO_OT_WriteToCurrentBlend(Operator):
     bl_idname = "studio.write_to_current_blend"
-    bl_label = "写入当前文件"
-    bl_description = "将身份信息写入当前 .blend 文件的 Custom Properties"
+    bl_label = "Write to Current File"
+    bl_description = "Write identity information to current .blend file's Custom Properties"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_translation_context = "Operator"
     
     def execute(self, context):
         if not bpy.data.filepath:
-            self.report({'ERROR'}, "文件未保存，请先保存文件")
+            self.report({'ERROR'}, "File not saved, please save file first")
             return {'CANCELLED'}
         
         props = context.scene.studio_project_identity_props
@@ -62,26 +64,27 @@ class STUDIO_OT_WriteToCurrentBlend(Operator):
         )
         
         if success:
-            self.report({'INFO'}, "文件元数据已更新")
+            self.report({'INFO'}, "File metadata updated")
             return {'FINISHED'}
         else:
-            self.report({'ERROR'}, "写入文件元数据失败")
+            self.report({'ERROR'}, "Failed to write file metadata")
             return {'CANCELLED'}
 
 class STUDIO_OT_SyncFromProjectMetadata(Operator):
     bl_idname = "studio.sync_from_project_metadata"
-    bl_label = "从项目元数据同步"
-    bl_description = "用 project.json 覆盖当前 .blend 的身份信息"
+    bl_label = "Sync from Project Metadata"
+    bl_description = "Overwrite current .blend identity information with project.json"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_translation_context = "Operator"
     
     def execute(self, context):
         if not bpy.data.filepath:
-            self.report({'ERROR'}, "文件未保存，请先保存文件")
+            self.report({'ERROR'}, "File not saved, please save file first")
             return {'CANCELLED'}
         
         project_meta = metadata.read_project_metadata()
         if not project_meta:
-            self.report({'ERROR'}, "未找到项目元数据文件")
+            self.report({'ERROR'}, "Project metadata file not found")
             return {'CANCELLED'}
         
         success = blend_meta.sync_from_project_metadata()
@@ -99,17 +102,18 @@ class STUDIO_OT_SyncFromProjectMetadata(Operator):
             props.project_type = project.get("type", "")
             props.copyright = author.get("copyright", "")
             
-            self.report({'INFO'}, "已从项目元数据同步")
+            self.report({'INFO'}, "Synced from project metadata")
             return {'FINISHED'}
         else:
-            self.report({'ERROR'}, "同步失败")
+            self.report({'ERROR'}, "Sync failed")
             return {'CANCELLED'}
 
 class STUDIO_OT_LoadToEditor(Operator):
     bl_idname = "studio.load_identity_to_editor"
-    bl_label = "加载到编辑器"
-    bl_description = "从文件或项目元数据加载身份信息到编辑器"
+    bl_label = "Load to Editor"
+    bl_description = "Load identity information from file or project metadata to editor"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_translation_context = "Operator"
     
     def execute(self, context):
         try:
@@ -135,7 +139,7 @@ class STUDIO_OT_LoadToEditor(Operator):
                 else:
                     props.project_type = "single_shot"
                 props.copyright = blend_meta_data.get("copyright", "")
-                self.report({'INFO'}, "已从文件元数据加载")
+                self.report({'INFO'}, "Loaded from file metadata")
             elif project_meta:
                 author = project_meta.get("author", {})
                 project = project_meta.get("project", {})
@@ -151,12 +155,12 @@ class STUDIO_OT_LoadToEditor(Operator):
                 else:
                     props.project_type = "single_shot"
                 props.copyright = author.get("copyright", "")
-                self.report({'INFO'}, "已从项目元数据加载")
+                self.report({'INFO'}, "Loaded from project metadata")
             else:
-                self.report({'WARNING'}, "未找到可用的身份信息")
+                self.report({'WARNING'}, "No available identity information found")
             
             return {'FINISHED'}
         except Exception as e:
-            self.report({'ERROR'}, f"加载失败: {str(e)}")
+            self.report({'ERROR'}, bpy.app.translations.pgettext_iface(f"Load failed: {str(e)}"))
             return {'CANCELLED'}
 

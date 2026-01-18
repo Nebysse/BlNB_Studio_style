@@ -11,6 +11,8 @@ bl_info = {
 import bpy
 from . import addon_prefs
 from . import ui_panel
+from . import translations
+from . import web_server
 from .operators import op_init_project, op_new_asset, op_new_shot, op_change_asset_type, op_project_identity
 
 classes = [
@@ -58,7 +60,53 @@ def on_save_pre(scene):
     if project_meta:
         blend_meta.sync_from_project_metadata()
 
+@bpy.app.handlers.persistent
+def on_load_post(dummy):
+    from .core import detector, metadata
+    from . import web_server
+    import threading
+    from pathlib import Path
+    
+    try:
+        filepath = bpy.data.filepath
+    except AttributeError:
+        filepath = None
+    
+    if not filepath:
+        web_server.update_project_state({
+            "filepath": None,
+            "project_root": None,
+            "metadata": None
+        })
+        return
+    
+    file_path = Path(filepath)
+    if not file_path.suffix == ".blend":
+        return
+    
+    project_root = detector.find_project_root()
+    project_meta = None
+    
+    if project_root:
+        project_meta = metadata.read_project_metadata(project_root)
+    
+    def sync_to_webapp():
+        try:
+            web_server.update_project_state({
+                "filepath": str(file_path),
+                "filename": file_path.name,
+                "project_root": str(project_root) if project_root else None,
+                "metadata": project_meta or {},
+                "object_count": len(bpy.data.objects),
+                "scenes": [s.name for s in bpy.data.scenes]
+            })
+        except Exception as e:
+            print(f"同步项目状态失败: {e}")
+    
+    threading.Thread(target=sync_to_webapp, daemon=True).start()
+
 def register():
+    translations.register()
     for cls in classes:
         bpy.utils.register_class(cls)
     bpy.types.Scene.studio_project_props = bpy.props.PointerProperty(
@@ -70,13 +118,31 @@ def register():
     
     if on_save_pre not in bpy.app.handlers.save_pre:
         bpy.app.handlers.save_pre.append(on_save_pre)
+    
+    if on_load_post not in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.append(on_load_post)
+    
+    port = web_server.start_server()
+    if port:
+        print(f"Web服务器已启动: http://127.0.0.1:{port}")
+    
+    try:
+        on_load_post(None)
+    except Exception as e:
+        print(f"初始化项目状态失败: {e}")
 
 def unregister():
+    web_server.stop_server()
+    
     if on_save_pre in bpy.app.handlers.save_pre:
         bpy.app.handlers.save_pre.remove(on_save_pre)
+    
+    if on_load_post in bpy.app.handlers.load_post:
+        bpy.app.handlers.load_post.remove(on_load_post)
     
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
     del bpy.types.Scene.studio_project_props
     del bpy.types.Scene.studio_project_identity_props
+    translations.unregister()
 

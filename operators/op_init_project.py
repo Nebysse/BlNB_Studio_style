@@ -7,30 +7,31 @@ from ..core import generator, metadata, blend_meta
 
 class STUDIO_OT_InitProject(Operator):
     bl_idname = "studio.init_project"
-    bl_label = "初始化项目结构"
-    bl_description = "创建符合 Blender Studio 规范的项目目录结构"
+    bl_label = "Initialize Project Structure"
+    bl_description = "Create project directory structure conforming to Blender Studio standards"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_translation_context = "Operator"
     
     project_code: StringProperty(
-        name="项目代号",
-        description="项目代号（小写、下划线分隔）",
+        name="Project Code",
+        description="Project code (lowercase, underscore separated)",
         default="wing_it",
     )
     
     base_path: StringProperty(
-        name="项目根目录",
-        description="项目将创建在此目录下",
+        name="Project Root Directory",
+        description="Directory where the project will be created",
         default="",
         subtype='DIR_PATH',
     )
     
     project_type: EnumProperty(
-        name="项目类型",
-        description="选择项目模板类型",
+        name="Project Type",
+        description="Select project template type",
         items=[
-            ('single_shot', '单镜头练习', '单镜头练习/小作品'),
-            ('short_film', '多镜头短篇', '多镜头短篇项目'),
-            ('asset_library', '资产库项目', '纯资产库项目'),
+            ('single_shot', 'Single Shot Practice', 'Single shot practice/small work'),
+            ('short_film', 'Multi-Shot Short Film', 'Multi-shot short film project'),
+            ('asset_library', 'Asset Library Project', 'Pure asset library project'),
         ],
         default='single_shot',
     )
@@ -44,7 +45,7 @@ class STUDIO_OT_InitProject(Operator):
             base_path = prefs.default_project_root
         
         if not base_path:
-            self.report({'ERROR'}, "请指定项目根目录")
+            self.report({'ERROR'}, "Please specify project root directory")
             return {'CANCELLED'}
         
         success, result = generator.create_project(
@@ -78,7 +79,7 @@ class STUDIO_OT_InitProject(Operator):
                 copyright=identity_props.copyright or ""
             )
             
-            self.report({'INFO'}, f"项目创建成功: {result}")
+            self.report({'INFO'}, bpy.app.translations.pgettext_iface(f"Project created successfully: {result}"))
             context.scene.studio_project_props.project_code = self.project_code
             context.scene.studio_project_props.base_path = base_path
             context.scene.studio_project_props.project_root_path = result

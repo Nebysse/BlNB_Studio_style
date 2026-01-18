@@ -6,31 +6,32 @@ from ..core import generator, detector, naming
 
 class STUDIO_OT_NewShot(Operator):
     bl_idname = "studio.new_shot"
-    bl_label = "新建镜头结构"
-    bl_description = "在当前项目中创建新的镜头目录结构"
+    bl_label = "New Shot Structure"
+    bl_description = "Create new shot directory structure in current project"
     bl_options = {'REGISTER', 'UNDO'}
+    bl_translation_context = "Operator"
     
     seq_id: StringProperty(
-        name="序列ID",
-        description="序列标识符（如 010 或 seq_010）",
+        name="Sequence ID",
+        description="Sequence identifier (e.g., 010 or seq_010)",
         default="010",
     )
     
     shot_id: StringProperty(
-        name="镜头ID",
-        description="镜头标识符（如 0010 或 sh_0010）",
+        name="Shot ID",
+        description="Shot identifier (e.g., 0010 or sh_0010)",
         default="0010",
     )
     
     def execute(self, context):
         if not bpy.data.filepath:
-            self.report({'ERROR'}, "文件未保存，请先保存文件")
+            self.report({'ERROR'}, "File not saved, please save file first")
             return {'CANCELLED'}
         
         project_root = detector.find_project_root()
         
         if not project_root:
-            self.report({'ERROR'}, "未检测到项目根目录，请先初始化项目")
+            self.report({'ERROR'}, "Project root directory not detected, please initialize project first")
             return {'CANCELLED'}
         
         success, result, target_file = generator.create_shot_structure(
@@ -46,18 +47,18 @@ class STUDIO_OT_NewShot(Operator):
         if target_file:
             is_valid, error_msg = naming.validate_shot_filename(target_file.name)
             if not is_valid:
-                self.report({'INFO'}, f"命名提醒: {error_msg}")
+                self.report({'INFO'}, bpy.app.translations.pgettext_iface(f"Naming reminder: {error_msg}"))
             
             if target_file.exists():
-                self.report({'ERROR'}, f"目标文件已存在: {target_file}")
+                self.report({'ERROR'}, bpy.app.translations.pgettext_iface(f"Target file already exists: {target_file}"))
                 return {'CANCELLED'}
         
         try:
             bpy.ops.wm.save_as_mainfile(filepath=str(target_file))
-            self.report({'INFO'}, f"镜头结构创建成功，文件已保存: {target_file}")
+            self.report({'INFO'}, bpy.app.translations.pgettext_iface(f"Shot structure created successfully, file saved: {target_file}"))
             return {'FINISHED'}
         except Exception as e:
-            self.report({'ERROR'}, f"保存文件失败: {str(e)}")
+            self.report({'ERROR'}, bpy.app.translations.pgettext_iface(f"Failed to save file: {str(e)}"))
             return {'CANCELLED'}
     
     def invoke(self, context, event):
